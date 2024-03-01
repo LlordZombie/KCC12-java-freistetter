@@ -25,6 +25,7 @@ import com.knapp.codingcontest.operations.WorkStation;
 import com.knapp.codingcontest.operations.ex.*;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * This is the code YOU have to provide
@@ -41,19 +42,19 @@ public class Solution {
         workStation = warehouse.getWorkStation();
         this.input = input;
 
-        // TODO: prepare data structures (but may also be done in run() method below)
+
     }
 
     public String getParticipantName() {
-        /* lines containing '@TODO' are removed before packaging contest-sandbox*/
-        return "Linus Freistetter"; // TODO: return your name
+
+        return "Linus Freistetter";
     }
 
     // ----------------------------------------------------------------------------
 
     public Institute getParticipantInstitution() {
-        /* lines containing '@TODO' are removed before packaging contest-sandbox*/
-        return Institute.HTL_Rennweg_Wien; // TODO: return the Id of your institute - please refer to the hand-out
+
+        return Institute.HTL_Rennweg_Wien;
     }
 
     // ----------------------------------------------------------------------------
@@ -61,11 +62,38 @@ public class Solution {
     /**
      * The main entry-point.
      */
-    public void run() throws Exception {
+    public void run() {//TODO: vier Orders laden, in Array speichern und optimalPrds anwenden
         Collection<Order> orders = input.getAllOrders();
         ArrayList<Product> inWs = new ArrayList<>();
+       // AtomicInteger c = new AtomicInteger();
+
         orders.iterator().forEachRemaining(o -> {
-            try {
+            try {/*
+                Collections.sort(inWs);
+                workStation.startOrder(o);
+                if (c.get() %4==3){
+                    Product[] p = getOptimalPrds();
+                    for (int i = 0; i < 4; i++) {
+                        inWs.add(p[i]);
+                        workStation.assignProduct(p[i]);
+                    }
+                    for (int i = 0; i < 4; i++) {
+                        List<Product> inOrder = o.getOpenProducts();
+                        List<Product> doAble = new ArrayList<>();
+                        inOrder.forEach(product -> {
+                            if (contains(p,product)){
+                                doAble.add(product);
+                            }
+                        });
+                        workStation.getActiveOrders().forEach(ord->{
+                            ord.getOpenProducts().forEach(prd->{
+
+                            });
+                        });
+                    }
+                }
+                c.getAndIncrement();
+                */
                 Collections.sort(inWs);
                 workStation.startOrder(o);
                 List<Product> inOrder = o.getOpenProducts();
@@ -80,7 +108,10 @@ public class Solution {
                         workStation.assignProduct(product);
                         inWs.add(product);
                     }
-                    workStation.pickOrder(o, product);
+                    for (int i = 0; i < getNumInOrder(o,product); i++) {
+                        workStation.pickOrder(o, product);
+                    }
+
 
                     inOrder = o.getOpenProducts();
 
@@ -94,8 +125,42 @@ public class Solution {
         });
 
 
-        // TODO: make calls to API (see below)
-        // lines containing '@TODO' are removed before packaging contest-sandbox
+    }
+    private int getNumInOrder(Order o, Product p){
+        AtomicInteger i = new AtomicInteger();
+        o.getOpenProducts().forEach(product -> {
+            if (product.equals(p)){
+                i.getAndIncrement();
+            }
+        });
+        return i.get();
+    }
+    private static boolean contains(Product[] all, Product p){
+        return Arrays.stream(all).toList().contains(p);
+    }
+    private Product[] getOptimalPrds() {
+        Product[] optimalPrds = new Product[4];
+        Map<Product, Integer> prdNumMap = new HashMap<>();
+        workStation.getActiveOrders().forEach(o -> o.getOpenProducts().forEach(p -> {
+            if (!prdNumMap.containsKey(p)) {
+                prdNumMap.put(p, 1);
+            } else {
+                prdNumMap.put(p, prdNumMap.get(p) + 1);
+            }
+        }));
+        Map<Integer, Product> rev = new HashMap<>();
+        for (int i = 0; i < prdNumMap.size(); i++) {
+            rev.put(prdNumMap.get(new ArrayList<>(prdNumMap.keySet()).get(i)), new ArrayList<>(prdNumMap.keySet()).get(i));
+        }
+        ArrayList<Integer> sortedKeys = new ArrayList<>(rev.keySet());
+
+        Collections.sort(sortedKeys);
+
+
+        for (int i = 0; i < 4; i++) {
+            optimalPrds[i] = rev.get(sortedKeys.get(i));
+        }
+        return optimalPrds;
     }
 
 
