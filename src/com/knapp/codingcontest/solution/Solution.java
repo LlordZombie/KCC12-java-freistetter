@@ -111,8 +111,6 @@ public class Solution {
                     for (int i = 0; i < getNumInOrder(o,product); i++) {
                         workStation.pickOrder(o, product);
                     }
-
-
                     inOrder = o.getOpenProducts();
 
                 }
